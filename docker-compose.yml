@@ -1,0 +1,27 @@
+services:
+
+  api:
+    build: ./backend
+    env_file:
+      - .env.back
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - 3000:3000
+    env_file:
+      - .env.front
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    env_file:
+      - .env.db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
