@@ -1,0 +1,47 @@
+name: Deploy to Amazon ECR
+
+# El workflow se ejecutará cada vez que se haga un push a la rama "main"
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: us-east-1                   # Cambia por tu región de AWS
+  ECR_REPOSITORY: mi-repositorio-ecr     # Cambia por el nombre de tu repositorio ECR
+
+jobs:
+  deploy:
+    name: Build and Push to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Descargar el código del repositorio
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Configurar las credenciales de AWS usando los secretos guardados
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    # 3. Hacer login en Amazon ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # 4. Construir la imagen de Docker, etiquetarla y subirla (Push) a ECR
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        # Usamos el SHA del commit como tag para tener un historial claro
+        IMAGE_TAG: ${{ github.sha }} 
+      run: |
+        # Construir la imagen Docker usando el Dockerfile de la raíz
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        
+        # Subir las imágenes al registro de AWS
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
