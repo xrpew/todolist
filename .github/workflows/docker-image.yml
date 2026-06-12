@@ -7,8 +7,8 @@ on:
 env:
   AWS_REGION: us-east-1
   # 1. Definimos los nombres de ambos repositorios de ECR
-  ECR_FRONTEND_REPO: 107154021371.dkr.ecr.us-east-1.amazonaws.com/todolist 
-  ECR_BACKEND_REPO: 107154021371.dkr.ecr.us-east-1.amazonaws.com/todoback
+  ECR_FRONTEND_REPO: todolist
+  ECR_BACKEND_REPO: todoback
 
 jobs:
   deploy:
